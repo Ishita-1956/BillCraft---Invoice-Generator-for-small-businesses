@@ -114,116 +114,118 @@ export function ProductForm({ initialData }: ProductFormProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/products">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Products
-          </Link>
-        </Button>
+    <div className="flex justify-center items-start min-h-screen p-4">
+      <div className="w-full max-w-4xl space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/dashboard/products">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Products
+            </Link>
+          </Button>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Product Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Product Name *</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Enter product name"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sku">SKU</Label>
+                  <Input id="sku" name="sku" value={formData.sku} onChange={handleChange} placeholder="Product SKU" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Product description"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price *</Label>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={handleChange}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select value={formData.category} onValueChange={handleSelectChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="stock_quantity">Stock Quantity</Label>
+                  <Input
+                    id="stock_quantity"
+                    name="stock_quantity"
+                    type="number"
+                    min="0"
+                    value={formData.stock_quantity}
+                    onChange={handleChange}
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>}
+
+              <div className="flex justify-end gap-3">
+                <Button type="button" variant="outline" asChild>
+                  <Link href="/dashboard/products">Cancel</Link>
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isLoading ? "Saving..." : initialData?.id ? "Update Product" : "Create Product"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5" />
-            Product Information
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Product Name *</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter product name"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
-                <Input id="sku" name="sku" value={formData.sku} onChange={handleChange} placeholder="Product SKU" />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                placeholder="Product description"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="price">Price *</Label>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.price}
-                  onChange={handleChange}
-                  placeholder="0.00"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select value={formData.category} onValueChange={handleSelectChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="stock_quantity">Stock Quantity</Label>
-                <Input
-                  id="stock_quantity"
-                  name="stock_quantity"
-                  type="number"
-                  min="0"
-                  value={formData.stock_quantity}
-                  onChange={handleChange}
-                  placeholder="0"
-                />
-              </div>
-            </div>
-
-            {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>}
-
-            <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" asChild>
-                <Link href="/dashboard/products">Cancel</Link>
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                <Save className="mr-2 h-4 w-4" />
-                {isLoading ? "Saving..." : initialData?.id ? "Update Product" : "Create Product"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+// app/dashboard/page.tsx
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { DashboardLayout } from "@/components/dashboard-layout"
@@ -5,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { DollarSign, FileText, Package, Users, Plus } from "lucide-react"
+import { formatDate } from "@/lib/utils/dateFormatter"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -135,78 +137,77 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Button asChild variant="outline" className="h-16 sm:h-20 flex-col bg-transparent">
-                <Link href="/dashboard/invoices/new">
-                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
-                  <span className="text-sm sm:text-base">Create Invoice</span>
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="h-16 sm:h-20 flex-col bg-transparent">
-                <Link href="/dashboard/products/new">
-                  <Package className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
-                  <span className="text-sm sm:text-base">Add Product</span>
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="h-16 sm:h-20 flex-col bg-transparent">
-                <Link href="/dashboard/customers/new">
-                  <Users className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
-                  <span className="text-sm sm:text-base">Add Customer</span>
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Invoices */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg font-semibold text-gray-900">Recent Invoices</CardTitle>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/dashboard/invoices">View All</Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recentInvoices && recentInvoices.length > 0 ? (
-              <div className="space-y-3">
-                {recentInvoices.map((invoice) => (
-                  <div
-                    key={invoice.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg gap-2"
+<Link href="/dashboard/invoices/new">
+<FileText className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
+<span className="text-sm sm:text-base">Create Invoice</span>
+</Link>
+</Button>
+<Button asChild variant="outline" className="h-16 sm:h-20 flex-col bg-transparent">
+<Link href="/dashboard/products/new">
+<Package className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
+<span className="text-sm sm:text-base">Add Product</span>
+</Link>
+</Button>
+<Button asChild variant="outline" className="h-16 sm:h-20 flex-col bg-transparent">
+<Link href="/dashboard/customers/new">
+<Users className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
+<span className="text-sm sm:text-base">Add Customer</span>
+</Link>
+</Button>
+</div>
+</CardContent>
+</Card>
+    {/* Recent Invoices */}
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="text-lg font-semibold text-gray-900">Recent Invoices</CardTitle>
+        <Button asChild variant="ghost" size="sm">
+          <Link href="/dashboard/invoices">View All</Link>
+        </Button>
+      </CardHeader>
+      <CardContent>
+        {recentInvoices && recentInvoices.length > 0 ? (
+          <div className="space-y-3">
+            {recentInvoices.map((invoice) => (
+              <div
+                key={invoice.id}
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-gray-50 rounded-lg gap-2"
+              >
+                <div>
+                  <p className="font-medium text-gray-900">{invoice.invoice_number}</p>
+                  <p className="text-sm text-gray-600">{formatDate(invoice.created_at)}</p>
+                </div>
+                <div className="flex sm:flex-col sm:text-right items-start sm:items-end gap-2">
+                  <p className="font-medium text-gray-900">${Number(invoice.total_amount).toFixed(2)}</p>
+                  <span
+                    className={`
+                    inline-flex px-2 py-1 text-xs font-medium rounded-full
+                    ${
+                      invoice.status === "paid"
+                        ? "bg-green-100 text-green-800"
+                        : invoice.status === "sent"
+                          ? "bg-blue-100 text-blue-800"
+                          : invoice.status === "overdue"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                    }
+                  `}
                   >
-                    <div>
-                      <p className="font-medium text-gray-900">{invoice.invoice_number}</p>
-                      <p className="text-sm text-gray-600">{new Date(invoice.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <div className="flex sm:flex-col sm:text-right items-start sm:items-end gap-2">
-                      <p className="font-medium text-gray-900">${Number(invoice.total_amount).toFixed(2)}</p>
-                      <span
-                        className={`
-                        inline-flex px-2 py-1 text-xs font-medium rounded-full
-                        ${
-                          invoice.status === "paid"
-                            ? "bg-green-100 text-green-800"
-                            : invoice.status === "sent"
-                              ? "bg-blue-100 text-blue-800"
-                              : invoice.status === "overdue"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-gray-100 text-gray-800"
-                        }
-                      `}
-                      >
-                        {invoice.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                    {invoice.status}
+                  </span>
+                </div>
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                <p className="text-sm sm:text-base">No invoices yet. Create your first invoice to get started!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
-  )
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p className="text-sm sm:text-base">No invoices yet. Create your first invoice to get started!</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  </div>
+</DashboardLayout>
+)
 }
