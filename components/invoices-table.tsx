@@ -1,3 +1,4 @@
+// components/invoices-table.tsx
 "use client"
 
 import { useState } from "react"
@@ -6,7 +7,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +19,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Card, CardContent } from "@/components/ui/card"
-import { MoreHorizontal, Eye, Edit, Trash2, Download, Calendar, DollarSign } from "lucide-react"
+import { MoreHorizontal, Eye, Edit, Trash2, Download, Calendar, DollarSign, AlertTriangle } from "lucide-react"
+import { toast } from "sonner" // Optional: for better notifications
 
 interface Invoice {
   id: string
@@ -50,24 +52,45 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
     const supabase = createClient()
 
     try {
-      // First delete invoice items
+      // First delete invoice items (child records)
       const { error: itemsError } = await supabase
         .from("invoice_items")
         .delete()
         .eq("invoice_id", deleteInvoice.id)
 
-      if (itemsError) throw itemsError
+      if (itemsError) {
+        console.error("Error deleting invoice items:", itemsError)
+        throw new Error("Failed to delete invoice items")
+      }
 
-      // Then delete the invoice
-      const { error } = await supabase.from("invoices").delete().eq("id", deleteInvoice.id)
+      // Then delete the invoice (parent record)
+      const { error: invoiceError } = await supabase
+        .from("invoices")
+        .delete()
+        .eq("id", deleteInvoice.id)
 
-      if (error) throw error
+      if (invoiceError) {
+        console.error("Error deleting invoice:", invoiceError)
+        throw new Error("Failed to delete invoice")
+      }
 
+      // Success notification (optional - requires sonner package)
+      // toast.success(`Invoice ${deleteInvoice.invoice_number} deleted successfully`)
+      
+      // Show success alert
+      alert(`Invoice ${deleteInvoice.invoice_number} has been deleted successfully`)
+      
       setDeleteInvoice(null)
+      
+      // Refresh the page to show updated invoice list
       router.refresh()
     } catch (error) {
       console.error("Error deleting invoice:", error)
-      alert("Failed to delete invoice. Please try again.")
+      
+      // Error notification (optional - requires sonner package)
+      // toast.error("Failed to delete invoice. Please try again.")
+      
+      alert(`Failed to delete invoice: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsDeleting(false)
     }
@@ -108,6 +131,17 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
     }
   }
 
+  if (invoices.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-gray-500 text-lg mb-2">No invoices found</p>
+          <p className="text-gray-400 text-sm">Create your first invoice to get started</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex justify-center items-start min-h-screen p-4">
       <div className="w-full max-w-7xl">
@@ -131,7 +165,7 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
                   {invoices.map((invoice) => (
                     <TableRow 
                       key={invoice.id} 
-                      className="cursor-pointer hover:bg-gray-50"
+                      className="cursor-pointer hover:bg-gray-50 transition-colors"
                       onClick={() => router.push(`/dashboard/invoices/${invoice.id}`)}
                     >
                       <TableCell>
@@ -156,11 +190,12 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                               <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                          <DropdownMenuContent align="end" className="w-[160px]">
                             <DropdownMenuItem onClick={(e) => handleView(e, invoice.id)}>
                               <Eye className="mr-2 h-4 w-4" />
                               View
@@ -173,9 +208,10 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
                               <Download className="mr-2 h-4 w-4" />
                               Download PDF
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={(e) => handleDeleteClick(e, invoice)}
-                              className="text-red-600 focus:text-red-600"
+                              className="text-red-600 focus:text-red-600 focus:bg-red-50"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Delete
@@ -209,11 +245,12 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
                     {getStatusBadge(invoice.status)}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="w-[160px]">
                         <DropdownMenuItem onClick={(e) => handleView(e, invoice.id)}>
                           <Eye className="mr-2 h-4 w-4" />
                           View
@@ -226,9 +263,10 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
                           <Download className="mr-2 h-4 w-4" />
                           Download PDF
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={(e) => handleDeleteClick(e, invoice)}
-                          className="text-red-600 focus:text-red-600"
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
@@ -263,15 +301,42 @@ export function InvoicesTable({ invoices }: InvoicesTableProps) {
         <AlertDialog open={!!deleteInvoice} onOpenChange={() => setDeleteInvoice(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete invoice "{deleteInvoice?.invoice_number}"? This action cannot be undone and will also delete all associated invoice items.
+              <div className="flex items-center gap-2">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                </div>
+                <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
+              </div>
+              <AlertDialogDescription className="pt-3">
+                Are you sure you want to delete invoice <strong>"{deleteInvoice?.invoice_number}"</strong>?
+                <br />
+                <br />
+                This action cannot be undone and will permanently delete:
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>The invoice record</li>
+                  <li>All associated invoice items</li>
+                  <li>Invoice history and data</li>
+                </ul>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700">
-                {isDeleting ? "Deleting..." : "Delete"}
+              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDelete} 
+                disabled={isDeleting} 
+                className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              >
+                {isDeleting ? (
+                  <>
+                    <span className="mr-2">Deleting...</span>
+                    <span className="animate-spin">⏳</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Invoice
+                  </>
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

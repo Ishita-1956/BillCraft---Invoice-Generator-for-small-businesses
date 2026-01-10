@@ -312,41 +312,134 @@ export function InvoiceView({ invoice, businessProfile }: InvoiceViewProps) {
                 </div>
               </div>
 
-              {/* Invoice Items Table */}
+              {/* Invoice Items Table - Enhanced with Product Details */}
               <div className="mb-10">
-                <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                <div style={{ 
+                  backgroundColor: '#1f2937', 
+                  padding: '12px 16px',
+                  marginBottom: '0',
+                  borderTopLeftRadius: '8px',
+                  borderTopRightRadius: '8px'
+                }}>
+                  <h3 style={{ 
+                    color: '#ffffff', 
+                    fontSize: '16px', 
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    margin: 0
+                  }}>📋 Items / Products Details</h3>
+                </div>
+                <table className="w-full" style={{ borderCollapse: 'collapse', border: '2px solid #e5e7eb' }}>
                   <thead>
                     <tr style={{ 
-                      backgroundColor: '#1f2937', 
-                      borderTop: '2px solid #111827',
-                      borderBottom: '2px solid #111827'
+                      backgroundColor: '#f3f4f6', 
+                      borderBottom: '2px solid #d1d5db'
                     }}>
-                      <th className="text-left py-4 px-4 font-bold" style={{ color: '#ffffff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</th>
-                      <th className="text-center py-4 px-4 font-bold" style={{ color: '#ffffff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '80px' }}>Qty</th>
-                      <th className="text-right py-4 px-4 font-bold" style={{ color: '#ffffff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '120px' }}>Unit Price</th>
-                      <th className="text-center py-4 px-4 font-bold" style={{ color: '#ffffff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '100px' }}>Discount</th>
-                      <th className="text-right py-4 px-4 font-bold" style={{ color: '#ffffff', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '130px' }}>Total</th>
+                      <th className="text-left py-3 px-4 font-bold" style={{ color: '#374151', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '45%' }}>Item Description</th>
+                      <th className="text-center py-3 px-4 font-bold" style={{ color: '#374151', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '12%' }}>Quantity</th>
+                      <th className="text-right py-3 px-4 font-bold" style={{ color: '#374151', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '15%' }}>Unit Price</th>
+                      <th className="text-center py-3 px-4 font-bold" style={{ color: '#374151', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '13%' }}>Discount</th>
+                      <th className="text-right py-3 px-4 font-bold" style={{ color: '#374151', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', width: '15%' }}>Line Total</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {invoice.invoice_items.map((item: any, index: number) => (
-                      <tr key={item.id} style={{ 
-                        borderBottom: '1px solid #e5e7eb',
-                        backgroundColor: index % 2 === 0 ? '#ffffff' : '#f9fafb'
-                      }}>
-                        <td className="py-4 px-4" style={{ color: '#111827', fontSize: '15px', lineHeight: '1.5' }}>{item.description}</td>
-                        <td className="text-center py-4 px-4" style={{ color: '#111827', fontSize: '15px', fontWeight: '600' }}>{item.quantity}</td>
-                        <td className="text-right py-4 px-4" style={{ color: '#111827', fontSize: '15px' }}>₹{Number(item.unit_price).toFixed(2)}</td>
-                        <td className="text-center py-4 px-4" style={{ 
-                          color: item.discount_percentage > 0 ? '#dc2626' : '#111827', 
-                          fontSize: '15px',
-                          fontWeight: item.discount_percentage > 0 ? '600' : '400'
+                    {invoice.invoice_items.map((item: any, index: number) => {
+                      const itemSubtotal = item.quantity * Number(item.unit_price)
+                      const discountAmount = (itemSubtotal * Number(item.discount_percentage)) / 100
+                      
+                      return (
+                        <tr key={item.id} style={{ 
+                          borderBottom: '1px solid #e5e7eb',
+                          backgroundColor: index % 2 === 0 ? '#ffffff' : '#fafafa'
                         }}>
-                          {item.discount_percentage > 0 ? `-${item.discount_percentage}%` : '0%'}
-                        </td>
-                        <td className="text-right py-4 px-4 font-bold" style={{ color: '#111827', fontSize: '16px' }}>₹{Number(item.line_total).toFixed(2)}</td>
-                      </tr>
-                    ))}
+                          <td className="py-4 px-4" style={{ verticalAlign: 'top' }}>
+                            <div>
+                              <p style={{ color: '#111827', fontSize: '15px', fontWeight: '600', marginBottom: '4px' }}>
+                                {item.description}
+                              </p>
+                              {item.products && (
+                                <p style={{ color: '#6b7280', fontSize: '12px', fontStyle: 'italic' }}>
+                                  Product: {item.products.name}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="text-center py-4 px-4" style={{ verticalAlign: 'top' }}>
+                            <div style={{ 
+                              display: 'inline-block',
+                              backgroundColor: '#e0f2fe',
+                              color: '#0c4a6e',
+                              padding: '4px 12px',
+                              borderRadius: '6px',
+                              fontSize: '15px',
+                              fontWeight: '700'
+                            }}>
+                              {item.quantity}
+                            </div>
+                          </td>
+                          <td className="text-right py-4 px-4" style={{ verticalAlign: 'top' }}>
+                            <div style={{ fontSize: '15px', color: '#111827' }}>
+                              ₹{Number(item.unit_price).toFixed(2)}
+                            </div>
+                            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
+                              per unit
+                            </div>
+                          </td>
+                          <td className="text-center py-4 px-4" style={{ verticalAlign: 'top' }}>
+                            {item.discount_percentage > 0 ? (
+                              <div>
+                                <div style={{ 
+                                  color: '#dc2626', 
+                                  fontSize: '15px',
+                                  fontWeight: '700',
+                                  marginBottom: '2px'
+                                }}>
+                                  {item.discount_percentage}% OFF
+                                </div>
+                                <div style={{ 
+                                  fontSize: '11px', 
+                                  color: '#ef4444',
+                                  backgroundColor: '#fee2e2',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  display: 'inline-block'
+                                }}>
+                                  -₹{discountAmount.toFixed(2)}
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ 
+                                color: '#9ca3af', 
+                                fontSize: '13px',
+                                fontWeight: '500'
+                              }}>
+                                No Discount
+                              </div>
+                            )}
+                          </td>
+                          <td className="text-right py-4 px-4 font-bold" style={{ verticalAlign: 'top' }}>
+                            <div style={{ 
+                              color: '#059669', 
+                              fontSize: '17px',
+                              fontWeight: '700'
+                            }}>
+                              ₹{Number(item.line_total).toFixed(2)}
+                            </div>
+                            {item.discount_percentage > 0 && (
+                              <div style={{ 
+                                fontSize: '11px', 
+                                color: '#6b7280',
+                                textDecoration: 'line-through',
+                                marginTop: '2px'
+                              }}>
+                                ₹{itemSubtotal.toFixed(2)}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -374,7 +467,7 @@ export function InvoiceView({ invoice, businessProfile }: InvoiceViewProps) {
                     )}
                     {Number(invoice.discount_amount) > 0 && (
                       <div className="flex justify-between" style={{ fontSize: '16px', paddingBottom: '8px' }}>
-                        <span style={{ color: '#6b7280', fontWeight: '600' }}>Discount:</span>
+                        <span style={{ color: '#6b7280', fontWeight: '600' }}>Additional Discount:</span>
                         <span style={{ color: '#dc2626', fontWeight: '600' }}>-₹{Number(invoice.discount_amount).toFixed(2)}</span>
                       </div>
                     )}
